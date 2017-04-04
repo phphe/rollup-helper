@@ -30,7 +30,6 @@ function getBabelConfig() {
         browsers: ['last 2 versions']
       },
       modules: false,
-      useBuiltIns: true,
       debug: true
     }]]
   }
