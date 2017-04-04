@@ -36,7 +36,7 @@ function getBabelConfig() {
   }
 }
 function compileDir(dir, outputDir, main, opt = {}) {
-  main = path.basename(main)
+  main = main ? path.basename(main) : (mainObj.package.name + '.js')
   fs
   .readdirSync(dir)
   .filter(item => fs.statSync(dir + '/' + item).isFile() && item.match(/\.js$/))
