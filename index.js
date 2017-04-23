@@ -44,10 +44,7 @@ function compileDir(dir, outputDir, main, opt = {}) {
     var temp = path.relative(path.resolve('./src'), path.resolve(filePath)).replace('/', '_').replace('\\', '_')
     var isMain = main === item
     var moduleName = camelCase(isMain ? mainObj.package.name : mainObj.package.name + '_' + temp)
-    var opt2 = {
-      moduleName: moduleName
-    }
-    compileFile(filePath, outputDir, opt2)
+    compileFile(filePath, outputDir, Object.assign({ moduleName }, opt))
   })
 }
 function compileFile(filePath, outputDir, opt = {}) {
@@ -55,18 +52,19 @@ function compileFile(filePath, outputDir, opt = {}) {
     moduleName: null, // for umd
     banner: mainObj.banner || getBanner(),
     formats: ['umd', 'cjs', 'esm'],
-    babelConfig: getBabelConfig()
+    babelConfig: getBabelConfig(),
+    plugins: []
   }, opt)
   var name = path.parse(filePath).name
   // umd
   rollup.rollup({
     entry: filePath,
-    plugins: [
+    plugins: opt.plugins.concat([
       resolve(),
       // to include dependencies
       commonjs(),
       babel(opt.babelConfig)
-    ]
+    ])
   })
   .then(function (bundle) {
     var code = bundle.generate({
@@ -96,9 +94,9 @@ function compileFile(filePath, outputDir, opt = {}) {
   // common js and esm
   rollup.rollup({
     entry: filePath,
-    plugins: [
+    plugins: opt.plugins.concat([
       babel(opt.babelConfig)
-    ]
+    ])
   })
   .then(function (bundle) {
     return write(`${outputDir}/${name}.common.js`, bundle.generate({
