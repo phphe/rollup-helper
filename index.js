@@ -32,7 +32,6 @@ function getBabelConfig() {
       modules: false,
       debug: true
     }],
-      'es2015',
       'stage-2'
     ]
   }
