@@ -31,7 +31,10 @@ function getBabelConfig() {
       },
       modules: false,
       debug: true
-    }]]
+    }],
+      'es2015',
+      'stage-2'
+    ]
   }
 }
 function compileDir(dir, outputDir, main, opt = {}) {
