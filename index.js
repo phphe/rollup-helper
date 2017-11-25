@@ -58,41 +58,43 @@ function compileFile(filePath, outputDir, opt = {}) {
     plugins: []
   }, opt)
   var name = path.parse(filePath).name
-  // umd
-  rollup.rollup({
-    entry: filePath,
-    plugins: opt.plugins.concat([
-      resolve(),
-      // to include dependencies
-      commonjs(),
-      babel(opt.babelConfig)
-    ])
-  })
-  .then(function (bundle) {
-    var code = bundle.generate({
-      format: 'umd',
-      banner: opt.banner,
-      moduleName: opt.moduleName
-    }).code
-    return write(`${outputDir}/${name}.js`, code, code)
-  })
-  .then(function (unminified) {
-    var fileName = `${name}.min.js`
-    var mapName = `${name}.min.js.map`
-    var minified = uglify.minify(unminified, {
-      outSourceMap: mapName,
-      outFileName: fileName,
-      fromString: true
+  if (opt.umd == null || opt.umd === true) {
+    // umd
+    rollup.rollup({
+      entry: filePath,
+      plugins: opt.plugins.concat([
+        resolve(),
+        // to include dependencies
+        commonjs(),
+        babel(opt.babelConfig)
+      ])
     })
-    var code = opt.banner + '\n' + minified.code
-    var map = minified.map
-    return write(`${outputDir}/${fileName}`, code, code)
+    .then(function (bundle) {
+      var code = bundle.generate({
+        format: 'umd',
+        banner: opt.banner,
+        moduleName: opt.moduleName
+      }).code
+      return write(`${outputDir}/${name}.js`, code, code)
+    })
+    .then(function (unminified) {
+      var fileName = `${name}.min.js`
+      var mapName = `${name}.min.js.map`
+      var minified = uglify.minify(unminified, {
+        outSourceMap: mapName,
+        outFileName: fileName,
+        fromString: true
+      })
+      var code = opt.banner + '\n' + minified.code
+      var map = minified.map
+      return write(`${outputDir}/${fileName}`, code, code)
 
-    .then(function functionName() {
-      return write(`${outputDir}/${mapName}`, map, code)
+      .then(function functionName() {
+        return write(`${outputDir}/${mapName}`, map, code)
+      })
     })
-  })
-  .catch(logError)
+    .catch(logError)
+  }
   // common js and esm
   rollup.rollup({
     entry: filePath,
