@@ -1,4 +1,5 @@
 # rollup-helper
+[查看中文文档](#ChineseDoc)  
 help you to bundle a library to commonjs, esm, umd, umd.min with rollup quickly
 ```sh
 // install
@@ -19,6 +20,7 @@ bundle with rollup-helper
   1. [helper-js](https://github.com/phphe/helper-js)
   2. [date-functions](https://github.com/phphe/date-functions)
 
+<a name="ChineseDoc"></a>
 # 中文
 帮助你用rollup快速打包一个库到commonjs, esm, umd, umd.min
 ```sh
