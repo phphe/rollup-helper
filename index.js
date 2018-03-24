@@ -65,8 +65,8 @@ function compileFile(filePath, outputDir, opt = {}) {
       plugins: opt.plugins.concat([
         resolve(),
         // to include dependencies
+        babel(opt.babelConfig),
         commonjs(),
-        babel(opt.babelConfig)
       ])
     })
     .then(function (bundle) {
