@@ -28,5 +28,8 @@ module.exports = {
   ],
 }
 ```
+如果要打包`vue`文件, 运行`npm i -D rollup-plugin-vue`安装vue插件, vue插件将会被自动启用.   
+If you want to bundle `vue` files, run` npm i -D rollup-plugin-vue` to install the vue plugin. The vue plugin will be automatically enabled.
+
 复制`build`文件夹到你的项目根目录. 如果你的入口文件为`./src/index.js`或`./src/{package.name}.js`, 就搞定啦. 否则请修改`build/build.js`   
 Copy the `build` folder to your project root directory. If your entry file is `./src/index.js` or `./src/{package.name}.js`, all done. Otherwise, please modify `build/build.js`.
