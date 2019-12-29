@@ -1,4 +1,4 @@
-# rollup-helper
+# rollup-helper(Document outdated)
 ```sh
 npm i -D rollup-helper
 ```
