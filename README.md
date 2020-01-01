@@ -7,7 +7,8 @@ After installation, copy the following to your package.json
 ```json
 "scripts": {
   "build": "node build/build.js",
-  "dev": "node build/build.js --watch"
+  "dev": "node build/build.js --watch",
+  "build-test": "rollup -c"
 },
 ```
 复制以下内容到你的babel配置文件(例如`babel.config.js`). 仅针对一般js库项目.   

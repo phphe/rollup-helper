@@ -217,12 +217,12 @@ function get_default_input() {
 }
 function resolvePlugins(inputPlugins) {
   const defaultPlugins = [
-    JsonPlugin(),
-    NodeResolvePlugin(),
-    CommonjsPlugin(),
     BabelPlugin({
       runtimeHelpers: true,
     }),
+    NodeResolvePlugin(),
+    CommonjsPlugin(),
+    JsonPlugin(),
   ];
   if (inputPlugins) {
     inputPlugins.forEach(plugin => {
