@@ -1,144 +1,61 @@
-var fs = require('fs')
-var path = require('path')
-var rollup = require('rollup')
-var resolve = require('rollup-plugin-node-resolve')
-var commonjs = require('rollup-plugin-commonjs')
-var uglify = require('uglify-js')
-var mkdirp = require('mkdirp')
-var babel = require('rollup-plugin-babel')
-var mainObj = {
-  package: null,
-  banner: null,
-  babelConfig: null
-}
+// From vue. 参考vue
+// https://github.com/vuejs/vue/blob/dev/scripts/config.js
+const path = require('path')
+const fs = require('fs')
+const babel = require('rollup-plugin-babel')
+const alias = require('@rollup/plugin-alias')
+const cjs = require('@rollup/plugin-commonjs')
+const replace = require('@rollup/plugin-replace')
+const node = require('@rollup/plugin-node-resolve')
+const json = require('@rollup/plugin-json')
+const {terser} = require('rollup-plugin-terser')
+const mkdirp = require('mkdirp')
 
-function getBanner() {
-  var banner =
-    '/*!\n' +
-    ' * ' + mainObj.package.name + ' v' + mainObj.package.version + '\n' +
-    ' * ' + mainObj.package.author + '\n' +
-    ' * ' + (mainObj.package.repository && mainObj.package.repository.url) + '\n' +
-    ' * Released under the ' + mainObj.package.license + ' License.\n' +
-    ' */\n'
-  return banner
-}
-
-function getBabelConfig() {
-  return {
-    presets: [['env', {
-      targets: {
-        browsers: ['last 2 versions']
-      },
-      modules: false,
-      debug: true
-    }],
-      'stage-2'
-    ]
+function genConfig ({name, pkg, aliases, builds}) {
+  const opts = builds[name]
+  const config = {
+    input: opts.entry,
+    external: opts.external,
+    plugins: [
+      alias(Object.assign({}, aliases, opts.alias)),
+      ...opts.plugins,
+    ],
+    output: {
+      file: opts.dest,
+      format: opts.format,
+      banner: opts.banner || getDefaultBanner(pkg),
+      name: opts.moduleName,
+      sourcemap: opts.sourcemap,
+    },
+    onwarn: (msg, warn) => {
+      if (!/Circular/.test(msg)) {
+        warn(msg)
+      }
+    }
   }
-}
-function compileDir(dir, outputDir, main, opt = {}) {
-  main = main ? path.basename(main) : (mainObj.package.name + '.js')
-  fs
-  .readdirSync(dir)
-  .filter(item => fs.statSync(dir + '/' + item).isFile() && item.match(/\.js$/))
-  .forEach(item => {
-    var filePath = dir + '/' + item
-    var temp = path.relative(path.resolve('./src'), path.resolve(filePath)).replace('/', '_').replace('\\', '_')
-    var isMain = main === item
-    var moduleName = camelCase(isMain ? mainObj.package.name : mainObj.package.name + '_' + temp)
-    compileFile(filePath, outputDir, Object.assign({ moduleName }, opt))
-  })
-}
-function compileFile(filePath, outputDir, opt = {}) {
-  opt = Object.assign({
-    moduleName: null, // for umd
-    banner: mainObj.banner || getBanner(),
-    formats: ['umd', 'cjs', 'esm'],
-    babelConfig: getBabelConfig(),
-    plugins: []
-  }, opt)
-  var name = path.parse(filePath).name
-  if (opt.umd == null || opt.umd === true) {
-    // umd
-    rollup.rollup({
-      entry: filePath,
-      plugins: opt.plugins.concat([
-        resolve(),
-        // to include dependencies
-        babel(opt.babelConfig),
-        commonjs(),
-      ])
-    })
-    .then(function (bundle) {
-      var code = bundle.generate({
-        format: 'umd',
-        banner: opt.banner,
-        moduleName: opt.moduleName
-      }).code
-      return write(`${outputDir}/${name}.js`, code, code)
-    })
-    .then(function (unminified) {
-      var fileName = `${name}.min.js`
-      var mapName = `${name}.min.js.map`
-      var minified = uglify.minify(unminified, {
-        outSourceMap: mapName,
-        outFileName: fileName,
-        fromString: true
-      })
-      var code = opt.banner + '\n' + minified.code
-      var map = minified.map
-      return write(`${outputDir}/${fileName}`, code, code)
 
-      .then(function functionName() {
-        return write(`${outputDir}/${mapName}`, map, code)
-      })
-    })
-    .catch(logError)
+  // built-in vars
+  const vars = {}
+  // build-specific env
+  if (opts.env) {
+    vars['process.env.NODE_ENV'] = JSON.stringify(opts.env)
   }
-  // common js and esm
-  rollup.rollup({
-    entry: filePath,
-    plugins: opt.plugins.concat([
-      babel(opt.babelConfig)
-    ])
+  if (Object.keys(vars).length > 0) {
+    config.plugins.push(replace(vars))
+  }
+  const isProd = /(min|prod)\.js$/.test(config.output.file)
+  if (isProd) {
+    config.plugins.push(terser())
+  }
+
+  Object.defineProperty(config, '_name', {
+    enumerable: false,
+    value: name
   })
-  .then(function (bundle) {
-    return write(`${outputDir}/${name}.common.js`, bundle.generate({
-      format: 'cjs',
-      banner: opt.banner
-    }).code, bundle)
-  })
-  .then(function (bundle) {
-    return write(`${outputDir}/${name}.esm.js`, bundle.generate({
-      format: 'es',
-      banner: opt.banner
-    }).code, bundle)
-  })
-  .catch(logError)
+
+  return config
 }
 
-function write(dest, code, bundle) {
-  mkdirp.sync(path.dirname(dest))
-  return new Promise(function (resolve, reject) {
-    fs.writeFile(dest, code, function (err) {
-      if (err) return reject(err)
-      console.log(blue(dest) + ' ' + getSize(code))
-      resolve(bundle)
-    })
-  })
-}
-
-function getSize(code) {
-  return (code.length / 1024).toFixed(2) + 'kb'
-}
-
-function logError(e) {
-  console.log(e)
-}
-
-function blue(str) {
-  return '\x1b[1m\x1b[34m' + str + '\x1b[39m\x1b[22m'
-}
 function studlyCase (str) {
   return str && (str[0].toUpperCase() + str.substr(1))
 }
@@ -150,7 +67,118 @@ function camelCase (str) {
   return temp.join('')
 }
 
-mainObj.compileDir = compileDir
-mainObj.compileFile = compileFile
-mainObj.write = write
-module.exports = mainObj
+function defaultPlugins() {
+  return [
+    babel({
+      runtimeHelpers: true,
+      exclude: ['node_modules/**'],
+    }),
+    node(),
+    cjs(),
+    json(),
+  ];
+}
+function getDefaultBanner(pkg) {
+  return `
+/*!
+ * ${pkg.name} v${pkg.version}
+ * (c) ${pkg.author}
+ * Released under the ${pkg.license} License.
+ */`.trim()
+}
+// build region =======================================
+const zlib = require('zlib')
+const rollup = require('rollup')
+
+function filterBuilds(builds) {
+  // filter builds via command line arg
+  if (process.argv[2]) {
+    const filters = process.argv[2].split(',')
+    builds = builds.filter(b => {
+      return filters.some(f => b.output.file.indexOf(f) > -1 || b._name.indexOf(f) > -1)
+    })
+  }
+  return builds
+}
+
+function build (builds) {
+  let built = 0
+  const total = builds.length
+  const next = () => {
+    buildEntry(builds[built]).then(() => {
+      built++
+      if (built < total) {
+        next()
+      }
+    }).catch(logError)
+  }
+
+  next()
+}
+
+function buildEntry (config) {
+  const output = config.output
+  const isZip = Boolean(config.plugins.find(v => v.name === 'terser'))
+  const { file, banner } = output
+  return rollup.rollup(config)
+    .then(bundle => bundle.generate(output))
+    .then(async bundle => {
+      const {code, map} = bundle.output[0]
+      if (output.sourcemap) {
+        const mapPath = `${file}.map`
+        await write(mapPath, map.toString())
+      }
+      await write(file, code, isZip)
+    })
+}
+
+function write (dest, code, zip) {
+  return new Promise((resolve, reject) => {
+    function report (extra) {
+      console.log(blue(path.relative(process.cwd(), dest)) + ' ' + getSize(code) + (extra || ''))
+      resolve()
+    }
+
+    mkdirp.sync(path.dirname(dest))
+    fs.writeFile(dest, code, err => {
+      if (err) return reject(err)
+      if (zip) {
+        zlib.gzip(code, (err, zipped) => {
+          if (err) return reject(err)
+          report(' (gzipped: ' + getSize(zipped) + ')')
+        })
+      } else {
+        report()
+      }
+    })
+  })
+}
+
+function getSize (code) {
+  return (code.length / 1024).toFixed(2) + 'kb'
+}
+
+function logError (e) {
+  console.log(e)
+}
+
+function blue (str) {
+  return '\x1b[1m\x1b[34m' + str + '\x1b[39m\x1b[22m'
+}
+
+// export region ==================================
+module.exports = {
+  defaultPlugins,
+  getDefaultBanner,
+  camelCase,
+  studlyCase,
+  genConfig,
+  // build
+  build,
+  filterBuilds,
+  buildEntry,
+  write,
+  getSize,
+  logError,
+  blue,
+}
