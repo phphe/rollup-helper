@@ -165,7 +165,7 @@ function logError (e) {
 function blue (str) {
   return '\x1b[1m\x1b[34m' + str + '\x1b[39m\x1b[22m'
 }
-
+const parseIntFloat = ['core-js/modules/es.parse-int', 'core-js/modules/es.parse-float'];
 // export region ==================================
 module.exports = {
   defaultPlugins,
@@ -181,4 +181,5 @@ module.exports = {
   getSize,
   logError,
   blue,
+  parseIntFloat,
 }

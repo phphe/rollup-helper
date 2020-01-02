@@ -24,6 +24,8 @@ const options = {
   },
 }
 
+const parseIntFloat = ['core-js/modules/es.parse-int', 'core-js/modules/es.parse-float'];
+
 const builds = {
   'cjs': {
     entry: options.input,
@@ -45,6 +47,7 @@ const builds = {
     format: 'umd',
     plugins: defaultPlugins(),
     moduleName: options.moduleName,
+    external: parseIntFloat,
   },
   'umd-min': {
     entry: options.input,
@@ -53,6 +56,7 @@ const builds = {
     plugins: defaultPlugins(),
     moduleName: options.moduleName,
     sourcemap: true,
+    external: parseIntFloat,
   },
 }
 
