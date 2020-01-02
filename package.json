@@ -1,6 +1,6 @@
 {
   "name": "rollup-helper",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,9 @@
     "@rollup/plugin-replace": "^2.3.0",
     "terser": "^3.10.2",
     "commander": "^4.0.1",
-    "zlib": "^1.0.5"
+    "zlib": "^1.0.5",
+    "@babel/runtime": "^7.7.7",
+    "core-js": "^2.6.11"
   },
   "repository": {
     "type": "git",
