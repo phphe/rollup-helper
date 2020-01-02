@@ -2,7 +2,7 @@
 遇到了很多打包js库的问题, 使用过[egoist/bili](https://github.com/egoist/bili), 遇到了corejs3+rollup的bug, runtime, polyfill, 研究了vue本身的打包, 最后还是每个库依次看文档, 弄懂了打包的相关问题, 折腾了几天, 这是成果, 可以直接用.   
 I encountered a lot of problems with packaging js libraries. I tried [egoist/bili](https://github.com/egoist/bili), got corejs3 + rollup bugs, runtime, polyfill, tried the packaging of vue itself. Finally, I read all documentation of each library, and understood the problems related to packaging. This has bothered me for a few days. Now you can use the library to help bundling js library.
 ## 特点和注意的点
-* 第三方库源码不应包含进cjs和esm打包结果, 应当添加进external. 所以如果引入了其他库, 请配置config.js里的external_cjs_esm.
+* 第三方库源码不应包含进cjs和esm打包结果, 应当添加进external. 所以打包cjs和esm时, 所有package.json里的dependence被设置成外部依赖. 要调整可修改config.js里的external_cjs_esm.
 * 建议使用webpack打包vue.
 * 尝试过vue的打包代码, 但是vue使用buble而不是babel, 新语法处理不了.
 * core-js@3和rollup一起有个bug, core-js如果引入了parseInt和parseFloat, 就会报错. 所以打包成umd时把这俩作为了外部包, 不包含进源码, 基本不影响, 除非运行umd的浏览器连这两个函数都不支持.
@@ -10,7 +10,7 @@ I encountered a lot of problems with packaging js libraries. I tried [egoist/bil
 * 解决了`regeneratorruntime is not defined`.
 * rollup正在把插件移入@rollup, 但是rollup-plugin-babel还没有. rollup-plugin-babel自定义babel配置好像对babel7无效, 所以目前只能使用babel.config.js全局配置.
 ## Features and important points
-* The third-party library source code should not be included in the cjs and esm bundle. So mark them as external. So if other libraries are imported, please configure `external_cjs_esm` in `config.js`.
+* The third-party library source code should not be included in the cjs and esm bundle. So when packaging cjs and esm, all dependencies in package.json are set to external dependencies. If you want to edit, modify `external_cjs_esm` in `config.js`
 * Support bundle vue with webpack.
 * Have tried vue's packaging code, but it vue uses bubble instead of babel, the new syntax can't handle.
 * There is a bug with core-js@3 and rollup. If core-js insert parseInt and parseFloat, it will cause error. So when packaged into umd, these two are set as external packages, which are not included in the bundle code. It will break if running UMD's browser does not support these two functions.
