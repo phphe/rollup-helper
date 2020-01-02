@@ -55,7 +55,7 @@ const builds = {
     format: 'umd',
     plugins: defaultPlugins(),
     moduleName: options.moduleName,
-    sourcemap: true,
+    sourcemap: false,
     external: parseIntFloat,
   },
 }
