@@ -16,6 +16,12 @@ const options = {
   input: fs.existsSync(resolve('src/index.js')) ? resolve(`src/index.js`) : resolve(`src/${pkg.name}.js`),
   outputName: pkg.name,
   moduleName: camelCase(pkg.name),
+  external_cjs_esm: source => {
+    const external = [/^core-js/, /^@babel\/runtime/]
+    if (external.find(re => re === source || (re.test && re.test(source)))) {
+      return true
+    }
+  },
 }
 
 const builds = {
@@ -24,12 +30,14 @@ const builds = {
     dest: resolve(`dist/${options.outputName}.cjs.js`),
     format: 'cjs',
     plugins: defaultPlugins(),
+    external: options.external_cjs_esm,
   },
   'esm': {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.esm.js`),
     format: 'es',
     plugins: defaultPlugins(),
+    external: options.external_cjs_esm,
   },
   'umd': {
     entry: options.input,
@@ -44,6 +52,7 @@ const builds = {
     format: 'umd',
     plugins: defaultPlugins(),
     moduleName: options.moduleName,
+    sourcemap: true,
   },
 }
 
