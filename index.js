@@ -32,7 +32,7 @@ function defaultPlugins(opt = {}) {
   return [
     babel({
       runtimeHelpers: true,
-      exclude: ['node_modules/**'],
+      exclude: [/^.*?node_modules\/.+$/],
       ...opt.babel
     }),
     node({...opt.node}),
@@ -53,7 +53,6 @@ const babelTargetEsmodules = {
 }
 
 function belongsTo(source, dependencePatterns) {
-  const external = [/^core-js/, /^@babel\/runtime/, ...Object.keys(pkg.dependencies)]
   for (const pattern of dependencePatterns) {
     if (pattern.test) {
       // regexp
@@ -139,7 +138,7 @@ function blue (str) {
 // export region ==================================
 module.exports = {
   defaultPlugins,
-  getDefaultBanner,
+  defaultBanner,
   camelCase,
   studlyCase,
   babelTargetEsmodules,
