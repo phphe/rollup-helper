@@ -45,8 +45,8 @@ const babelTargetEsmodules = {
   presets: [
     ['@babel/preset-env', {
       useBuiltIns: false,
-      "targets": {
-        "esmodules": true,
+      targets: {
+        esmodules: true,
       },
     }]
   ],
