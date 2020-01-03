@@ -1,4 +1,7 @@
-const {genConfig: genConfig0, camelCase, defaultPlugins, parseIntFloat} = require('rollup-helper')
+const {
+  camelCase, defaultBanner, defaultPlugins, babelTargetEsmodules, belongsTo
+  alias, replace, terser, // rollup plugins
+} = require('rollup-helper')
 const path = require('path')
 const fs = require('fs')
 const pkg = require('../package.json')
@@ -8,12 +11,6 @@ const options = {
   input: fs.existsSync(resolve('src/index.js')) ? resolve(`src/index.js`) : resolve(`src/${pkg.name}.js`),
   outputName: pkg.name,
   moduleName: camelCase(pkg.name),
-  external_cjs_esm: source => {
-    const external = [/^core-js/, /^@babel\/runtime/, ...Object.keys(pkg.dependencies)]
-    if (external.find(re => re === source || (re.test && re.test(source)))) {
-      return true
-    }
-  },
 }
 
 const builds = {
@@ -21,15 +18,15 @@ const builds = {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.cjs.js`),
     format: 'cjs',
-    plugins: defaultPlugins(),
-    external: options.external_cjs_esm,
+    plugins: defaultPlugins({babel: babelTargetEsmodules}),
+    external: source => belongsTo(source, pkg.dependencies),
   },
   'esm': {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.esm.js`),
     format: 'es',
-    plugins: defaultPlugins(),
-    external: options.external_cjs_esm,
+    plugins: defaultPlugins({babel: babelTargetEsmodules}),
+    external: source => belongsTo(source, pkg.dependencies),
   },
   'umd': {
     entry: options.input,
@@ -37,7 +34,6 @@ const builds = {
     format: 'umd',
     plugins: defaultPlugins(),
     moduleName: options.moduleName,
-    external: parseIntFloat,
   },
   'umd-min': {
     entry: options.input,
@@ -46,13 +42,53 @@ const builds = {
     plugins: defaultPlugins(),
     moduleName: options.moduleName,
     sourcemap: false,
-    external: parseIntFloat,
   },
 }
 
 const aliases = require('./alias')
-function genConfig(name) {
-  return genConfig0({name, pkg, aliases, builds})
+function genConfig (name) {
+  const opts = builds[name]
+  const config = {
+    input: opts.entry,
+    external: opts.external,
+    plugins: [
+      alias(Object.assign({}, aliases, opts.alias)),
+      ...opts.plugins,
+    ],
+    output: {
+      file: opts.dest,
+      format: opts.format,
+      banner: opts.banner || defaultBanner(pkg),
+      name: opts.moduleName,
+      sourcemap: opts.sourcemap,
+    },
+    onwarn: (msg, warn) => {
+      if (!/Circular/.test(msg)) {
+        warn(msg)
+      }
+    }
+  }
+
+  // built-in vars
+  const vars = {}
+  // build-specific env
+  if (opts.env) {
+    vars['process.env.NODE_ENV'] = JSON.stringify(opts.env)
+  }
+  if (Object.keys(vars).length > 0) {
+    config.plugins.push(replace(vars))
+  }
+  const isProd = /(min|prod)\.js$/.test(config.output.file)
+  if (isProd) {
+    config.plugins.push(terser())
+  }
+
+  Object.defineProperty(config, '_name', {
+    enumerable: false,
+    value: name
+  })
+
+  return config
 }
 
 if (process.env.TARGET) {
