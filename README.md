@@ -25,6 +25,7 @@ In general, esm and cjs are common formats for front-end projects, and umd is a 
 * It is recommended to use `egoist/bili` to bundle vue. If you want to configure it yourself, you need to add rollup-plugin-vue (specify version 5.1.1 in windows, because there are bugs), configure css extraction with rollup-plugin-vue, cooperate with rollup-plugin-css-only handles css, [Reference](https://rollup-plugin-vue.vuejs.org/examples.html#minimal). [Vue Jsx reference](https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/babel-preset-app#vue-jsx-support)
 * Have tried vue's packaging code, but it vue uses bubble instead of babel, the new syntax can't handle.
 * Resolved `regeneratorruntime is not defined`.
+
 ```sh
 npm i -D rollup-helper
 ```
@@ -67,3 +68,5 @@ module.exports = {
 
 复制`scripts`文件夹到你的项目根目录. 如果你的入口文件为`./src/index.js`或`./src/{package.name}.js`, 就搞定啦. 否则请修改`scripts/config.js`   
 Copy the `scripts` folder to your project root directory. If your entry file is `./src/index.js` or `./src/{package.name}.js`, all done. Otherwise, please modify `scripts/config.js`.
+## 使用示例 Example
+* [phphe/helper-js](https://github.com/phphe/helper-js)

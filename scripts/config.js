@@ -1,5 +1,5 @@
 const {
-  camelCase, defaultBanner, defaultPlugins, babelTargetEsmodules, belongsTo
+  camelCase, defaultBanner, defaultPlugins, babelTargetEsmodules, belongsTo,
   alias, replace, terser, // rollup plugins
 } = require('rollup-helper')
 const path = require('path')
@@ -19,14 +19,14 @@ const builds = {
     dest: resolve(`dist/${options.outputName}.cjs.js`),
     format: 'cjs',
     plugins: defaultPlugins({babel: babelTargetEsmodules}),
-    external: source => belongsTo(source, pkg.dependencies),
+    external: source => belongsTo(source, Object.keys(pkg.dependencies)),
   },
   'esm': {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.esm.js`),
     format: 'es',
     plugins: defaultPlugins({babel: babelTargetEsmodules}),
-    external: source => belongsTo(source, pkg.dependencies),
+    external: source => belongsTo(source, Object.keys(pkg.dependencies)),
   },
   'umd': {
     entry: options.input,

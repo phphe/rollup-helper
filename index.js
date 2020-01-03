@@ -148,11 +148,9 @@ module.exports = {
   terser,
   // build
   build,
-  filterBuilds,
   buildEntry,
   write,
   getSize,
   logError,
   blue,
-  parseIntFloat,
 }
