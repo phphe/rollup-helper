@@ -153,11 +153,9 @@ function getBabel(opt={}) {
 }
 // export region ==================================
 module.exports = {
-  defaultPlugins,
   getBanner,
   camelCase,
   studlyCase,
-  babelTargetEsmodules,
   belongsTo,
   alias,
   replace,
