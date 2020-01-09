@@ -19,7 +19,7 @@ function camelCase (str) {
   return temp.join('')
 }
 
-function defaultBanner(pkg) {
+function getBanner(pkg) {
   return `
 /*!
  * ${pkg.name} v${pkg.version}
@@ -134,11 +134,51 @@ function logError (e) {
 function blue (str) {
   return '\x1b[1m\x1b[34m' + str + '\x1b[39m\x1b[22m'
 }
-
+function getBabel(opt={}) {
+  opt = {
+    esmodules: false,
+    vue: false,
+    ...opt,
+  }
+  if (opt.vue) {
+    return {
+      presets: [
+        ['@vue/cli-plugin-babel/preset', {
+          useBuiltIns: false,
+          targets: {
+            esmodules: opt.esmodules,
+          },
+          polyfills: [],
+        }],
+      ],
+      plugins: [],
+    }
+  }
+  return {
+    presets: [
+      ['@babel/preset-env', {
+        useBuiltIns: false,
+        targets: {
+          esmodules: opt.esmodules,
+        },
+      }]
+    ],
+    plugins: [
+      '@babel/plugin-transform-runtime',
+      // Stage 2
+     '@babel/plugin-proposal-export-namespace-from',
+      // Stage 3
+      '@babel/plugin-syntax-dynamic-import',
+      '@babel/plugin-syntax-import-meta',
+      ['@babel/plugin-proposal-class-properties', { 'loose': true }],
+      '@babel/plugin-proposal-json-strings',
+    ],
+  }
+}
 // export region ==================================
 module.exports = {
   defaultPlugins,
-  defaultBanner,
+  getBanner,
   camelCase,
   studlyCase,
   babelTargetEsmodules,
@@ -146,6 +186,7 @@ module.exports = {
   alias,
   replace,
   terser,
+  getBabel,
   // build
   build,
   buildEntry,

@@ -6,7 +6,11 @@
   "scripts": {},
   "author": "phphe <phphe@outlook.com> (https://github.com/phphe)",
   "license": "MIT",
+  "bin": {
+    "rogo": "cli.js"
+  },
   "dependencies": {
+    "rollup-plugin-css-only": "^2.0.0",
     "@babel/core": "^7.7.7",
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-export-namespace-from": "^7.7.4",
