@@ -28,30 +28,6 @@ function getBanner(pkg) {
  */`.trim()
 }
 
-function defaultPlugins(opt = {}) {
-  return [
-    babel({
-      runtimeHelpers: true,
-      exclude: [/^.*?node_modules\/.+$/],
-      ...opt.babel
-    }),
-    node({...opt.node}),
-    cjs({...opt.cjs}),
-    json({...opt.json}),
-  ];
-}
-const babelTargetEsmodules = {
-  babelrc: false,
-  presets: [
-    ['@babel/preset-env', {
-      useBuiltIns: false,
-      targets: {
-        esmodules: true,
-      },
-    }]
-  ],
-}
-
 function belongsTo(source, dependencePatterns) {
   for (const pattern of dependencePatterns) {
     if (pattern.test) {

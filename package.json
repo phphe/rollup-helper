@@ -1,6 +1,6 @@
 {
-  "name": "rollup-helper",
-  "version": "2.0.12",
+  "name": "rogo",
+  "version": "1.0.0-beta2",
   "description": "",
   "main": "index.js",
   "scripts": {},
@@ -33,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/phphe/rollup-helper.git"
+    "url": "https://github.com/phphe/rogo.git"
   },
   "devDependencies": {}
 }
