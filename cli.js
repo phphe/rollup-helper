@@ -37,12 +37,14 @@ options = {
   input,
   outputName: pkg.name,
   moduleName: camelCase(pkg.name),
+  sourceMap: program.source,
   ...options,
 }
 const cjs_esm_plugins = [
   babel({
     runtimeHelpers: true,
     exclude: [/@babel\/runtime/, /@babel\\runtime/, /regenerator-runtime/],
+    extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.vue'],
     babelrc: false,
     ...getBabel({esmodules: true, vue}),
   }),
@@ -54,6 +56,7 @@ const umd_plugins = [
   babel({
     runtimeHelpers: true,
     exclude: [/@babel\/runtime/, /@babel\\runtime/, /regenerator-runtime/],
+    extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.vue'],
     babelrc: false,
     ...getBabel({esmodules: false, vue}),
   }),
@@ -62,8 +65,9 @@ const umd_plugins = [
   json(),
 ];
 if (vue) {
-  cjs_esm_plugins.push(css(), vue({ css: false }))
-  umd_plugins.push(css(), vue({ css: false }))
+  // vue must before babel
+  cjs_esm_plugins.unshift(css(), vue({ css: false }))
+  umd_plugins.unshift(css(), vue({ css: false }))
 }
 const builds = {
   'cjs': {
@@ -97,7 +101,7 @@ const builds = {
     plugins: umd_plugins,
     banner: options.banner,
     moduleName: options.moduleName,
-    sourcemap: program.source,
+    sourcemap: options.sourceMap,
   },
 }
 function genConfig (name) {
