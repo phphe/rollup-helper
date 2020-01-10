@@ -7,6 +7,13 @@ const replace = require('@rollup/plugin-replace')
 const node = require('@rollup/plugin-node-resolve')
 const json = require('@rollup/plugin-json')
 const {terser} = require('rollup-plugin-terser')
+const postcss = require('rollup-plugin-postcss')
+let vue
+try {
+  vue = require('rollup-plugin-vue')
+  console.log('rollup-plugin-vue founded. It will be used.');
+} catch (e) {}
+
 // config region ===================
 function studlyCase (str) {
   return str && (str[0].toUpperCase() + str.substr(1))
@@ -40,6 +47,56 @@ function belongsTo(source, dependencePatterns) {
     }
   }
 }
+
+function getPlugins(opt={}) {
+  /*
+  opt = {bable: {}, node: {}, cjs: {}, json: {}, vue: {}, postcss: {}}
+   */
+  const plugins = [
+    babel({
+      runtimeHelpers: true,
+      exclude: [/@babel\/runtime/, /@babel\\runtime/, /regenerator-runtime/],
+      extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.vue'],
+      babelrc: false,
+      ...getBabel({esmodules: opt.esmodules, vue}),
+      ...opt.babel,
+    }),
+    node({
+      ...opt.node,
+    }),
+    cjs({
+      ...opt.cjs,
+    }),
+    json({
+      ...opt.json,
+    }),
+  ];
+  if (vue) {
+    // vue must before babel
+    plugins.unshift(
+      postcss({
+        extract: true,
+        ...opt.postcss,
+      }),
+      vue({
+        css: false,
+        ...opt.vue,
+      })
+    )
+  }
+  return plugins
+}
+
+function get_cjs_esm_plugins(opt={}) {
+  opt = {
+    esmodules: true,
+    ...opt,
+  }
+  return getPlugins(opt)
+}
+function get_umd_plugins(opt={}) {
+  return getPlugins(opt)
+}
 // build region =============
 const fs = require('fs')
 const mkdirp = require('mkdirp')
@@ -47,60 +104,41 @@ const path = require('path')
 const zlib = require('zlib')
 const rollup = require('rollup')
 
-function build (builds) {
-  let built = 0
-  const total = builds.length
-  const next = () => {
-    buildEntry(builds[built]).then(() => {
-      built++
-      if (built < total) {
-        next()
+async function build (builds) {
+  const report = {}
+  for (const config of builds) {
+    const bundle = await rollup.rollup(config)
+    const generated = await bundle.generate(config.output)
+    const dir = path.dirname(config.output.file)
+    const files = [];
+    generated.output.forEach(({code, map, fileName}) => {
+      files.push(fileName)
+      if (map) {
+        files.push(fileName + '.map')
       }
-    }).catch(logError)
-  }
-
-  next()
-}
-
-function buildEntry (config) {
-  const output = config.output
-  const isZip = Boolean(config.plugins.find(v => v.name === 'terser'))
-  const { file, banner } = output
-  return rollup.rollup(config)
-    .then(bundle => bundle.generate(output))
-    .then(async bundle => {
-      const {code, map} = bundle.output[0]
-      if (output.sourcemap) {
-        const mapPath = `${file}.map`
-        await write(mapPath, map.toString())
-      }
-      await write(file, code, isZip)
     })
-}
-
-function write (dest, code, zip) {
-  return new Promise((resolve, reject) => {
-    function report (extra) {
-      console.log(blue(path.relative(process.cwd(), dest)) + ' ' + getSize(code) + (extra || ''))
-      resolve()
-    }
-    mkdirp.sync(path.dirname(dest))
-    fs.writeFile(dest, code, err => {
-      if (err) return reject(err)
-      if (zip) {
-        zlib.gzip(code, (err, zipped) => {
-          if (err) return reject(err)
-          report(' (gzipped: ' + getSize(zipped) + ')')
-        })
+    await bundle.write(config.output)
+    for (const fileName of files) {
+      const filePath = path.resolve(dir, fileName)
+      // remove *.format.css[.map]
+      if (fileName.match(/\.\w+\.css/)) {
+        delete report[fileName]
+        fs.unlinkSync(filePath)
       } else {
-        report()
+        const item = {}
+        const code = fs.readFileSync(filePath)
+        item.size = getSize(code)
+        item.sizeGzipped = getSize(zlib.gzipSync(code))
+        console.log(blue(`${fileName} generated`));
+        report[fileName] = item
       }
-    })
-  })
+    }
+  }
+  console.table(report);
 }
 
 function getSize (code) {
-  return (code.length / 1024).toFixed(2) + 'kb'
+  return (code.length / 1024).toFixed(2) + ' KiB'
 }
 
 function logError (e) {
@@ -160,11 +198,14 @@ module.exports = {
   alias,
   replace,
   terser,
+  vue,
+  postcss,
   getBabel,
+  getPlugins,
+  get_cjs_esm_plugins,
+  get_umd_plugins,
   // build
   build,
-  buildEntry,
-  write,
   getSize,
   logError,
   blue,

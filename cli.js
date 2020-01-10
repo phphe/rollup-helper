@@ -1,30 +1,21 @@
 #!/usr/bin/env node
-
 const program = require('commander');
 const path = require('path')
 const fs = require('fs')
-const {camelCase, getBabel, belongsTo, build, getBanner} = require('./index');
-const babel = require('rollup-plugin-babel')
+const {camelCase, getBabel, belongsTo, build, getBanner, get_cjs_esm_plugins, get_umd_plugins, blue} = require('./index');
 const alias = require('@rollup/plugin-alias')
-const cjs = require('@rollup/plugin-commonjs')
 const replace = require('@rollup/plugin-replace')
-const node = require('@rollup/plugin-node-resolve')
-const json = require('@rollup/plugin-json')
 const {terser} = require('rollup-plugin-terser')
-const css = require('rollup-plugin-css-only')
 const resolve = p => path.resolve(process.cwd(), p)
 const pkg = require(resolve('./package.json'))
-let vue
-try {
-  vue = require('rollup-plugin-vue')
-  console.log('rollup-plugin-vue founded. It will be used.');
-} catch (e) {}
 
-let options
+let options = {}
 try {
   options = require(resolve('./rogo.config.js'))
-  console.log('config file founded. It will be used.');
-} catch (e) {}
+  console.log(blue('config file(rogo.config.js) founded. It will be used.'));
+} catch (e) {
+  console.log(blue('You can use rogo.config.js to config.'));
+}
 
 program
 .option('-i, --input', 'input file')
@@ -32,7 +23,7 @@ program
 program.parse(process.argv);
 
 const input = resolve(program.input || 'src/index.js')
-console.log(`Resolved input: ${input}`);
+console.log(blue(`Resolved input: ${input}`));
 options = {
   input,
   outputName: pkg.name,
@@ -40,41 +31,12 @@ options = {
   sourceMap: program.source,
   ...options,
 }
-const cjs_esm_plugins = [
-  babel({
-    runtimeHelpers: true,
-    exclude: [/@babel\/runtime/, /@babel\\runtime/, /regenerator-runtime/],
-    extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.vue'],
-    babelrc: false,
-    ...getBabel({esmodules: true, vue}),
-  }),
-  node(),
-  cjs(),
-  json(),
-];
-const umd_plugins = [
-  babel({
-    runtimeHelpers: true,
-    exclude: [/@babel\/runtime/, /@babel\\runtime/, /regenerator-runtime/],
-    extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.vue'],
-    babelrc: false,
-    ...getBabel({esmodules: false, vue}),
-  }),
-  node(),
-  cjs(),
-  json(),
-];
-if (vue) {
-  // vue must before babel
-  cjs_esm_plugins.unshift(css(), vue({ css: false }))
-  umd_plugins.unshift(css(), vue({ css: false }))
-}
 const builds = {
   'cjs': {
     entry: input,
     dest: resolve(`dist/${options.outputName}.cjs.js`),
     format: 'cjs',
-    plugins: cjs_esm_plugins,
+    plugins: get_cjs_esm_plugins(),
     banner: options.banner,
     external: source => belongsTo(source, Object.keys(pkg.dependencies||{})),
   },
@@ -82,7 +44,7 @@ const builds = {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.esm.js`),
     format: 'es',
-    plugins: cjs_esm_plugins,
+    plugins: get_cjs_esm_plugins(),
     banner: options.banner,
     external: source => belongsTo(source, Object.keys(pkg.dependencies||{})),
   },
@@ -90,7 +52,7 @@ const builds = {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.js`),
     format: 'umd',
-    plugins: umd_plugins,
+    plugins: get_umd_plugins(),
     banner: options.banner,
     moduleName: options.moduleName,
   },
@@ -98,7 +60,7 @@ const builds = {
     entry: options.input,
     dest: resolve(`dist/${options.outputName}.min.js`),
     format: 'umd',
-    plugins: umd_plugins,
+    plugins: get_umd_plugins(),
     banner: options.banner,
     moduleName: options.moduleName,
     sourcemap: options.sourceMap,

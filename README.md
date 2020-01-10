@@ -1,8 +1,18 @@
 # rogo
+本库旨在零配置快速打包js库. 如果你想更多功能, 请参考源码`index.js`, `cli.js`, 不多.
+This library aims to quickly package js libraries with zero configuration. If you want more features, please refer to the source code `index.js`,` cli.js`.
+
+* js库快速打包. Bundle js libray quickly.
+* 少配置. less config.
+* 使用rollup. `rollup` used.
+* `src/index.js` => cjs, esm, umd, umd-min.
+* 支持Vue. Vue supported.
+
 ```sh
 npm i -D rogo
 ```
-As a lib, @babel/runtime is required. Add follow into `dependencies` of `package.json`.
+As a lib, @babel/runtime is required. Add follow into `dependencies` of `package.json`
+@babel/runtime必须, 加到`dependencies`
 ```json
 "@babel/runtime": "^7.7.7",
 ```
@@ -37,3 +47,6 @@ module.exports = {
   banner: 'custom banner',
 }
 ```
+## Other
+本库使用了rollup. 参考了vue, bili.
+This library uses rollup. References vue, bili.
