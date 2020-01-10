@@ -165,7 +165,7 @@ function getBabel(opt={}) {
           polyfills: [],
         }],
       ],
-      plugins: [],
+      plugins: ['@babel/plugin-transform-runtime'],
     }
   }
   return {
