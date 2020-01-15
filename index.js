@@ -170,7 +170,10 @@ function getBabel(opt={}) {
           polyfills: [],
         }],
       ],
-      plugins: ['@babel/plugin-transform-runtime'],
+      plugins: [
+        '@babel/plugin-transform-runtime',
+        ["@babel/plugin-proposal-optional-chaining", { "loose": false }],
+      ],
     }
   }
   return {
@@ -184,6 +187,8 @@ function getBabel(opt={}) {
     ],
     plugins: [
       '@babel/plugin-transform-runtime',
+      // Stage 1
+      "@babel/plugin-proposal-optional-chaining", { "loose": false },
       // Stage 2
      '@babel/plugin-proposal-export-namespace-from',
       // Stage 3
