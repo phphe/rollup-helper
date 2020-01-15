@@ -36,7 +36,7 @@ const builds = {
     entry: input,
     dest: resolve(`dist/${options.outputName}.cjs.js`),
     format: 'cjs',
-    plugins: get_cjs_esm_plugins(),
+    plugins: get_cjs_esm_plugins({isCjs: true}),
     banner: options.banner,
     external: source => belongsTo(source, Object.keys(pkg.dependencies||{})),
   },

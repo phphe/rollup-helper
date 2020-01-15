@@ -50,15 +50,20 @@ function belongsTo(source, dependencePatterns) {
 
 function getPlugins(opt={}) {
   /*
-  opt = {bable: {}, node: {}, cjs: {}, json: {}, vue: {}, postcss: {}}
+  opt = {bable: {}, node: {}, cjs: {}, json: {}, vue: {}, postcss: {}, isCjs}
    */
+  const babelConfig = getBabel({esmodules: opt.esmodules, vue})
+  if (opt.isCjs) {
+    // replace extension .mjs to .js in cjs
+    babelConfig.plugins.push(['module-extension', {mjs: 'js'}])
+  }
   const plugins = [
     babel({
       runtimeHelpers: true,
       exclude: [/@babel\/runtime/, /@babel\\runtime/, /regenerator-runtime/],
       extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.vue'],
       babelrc: false,
-      ...getBabel({esmodules: opt.esmodules, vue}),
+      ...babelConfig,
       ...opt.babel,
     }),
     node({
