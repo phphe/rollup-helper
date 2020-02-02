@@ -172,7 +172,7 @@ function getBabel(opt={}) {
       ],
       plugins: [
         '@babel/plugin-transform-runtime',
-        ["@babel/plugin-proposal-optional-chaining", { "loose": false }],
+        ['@babel/plugin-proposal-optional-chaining', { 'loose': false }],
       ],
     }
   }
@@ -188,7 +188,7 @@ function getBabel(opt={}) {
     plugins: [
       '@babel/plugin-transform-runtime',
       // Stage 1
-      "@babel/plugin-proposal-optional-chaining", { "loose": false },
+      ['@babel/plugin-proposal-optional-chaining', { 'loose': false }],
       // Stage 2
      '@babel/plugin-proposal-export-namespace-from',
       // Stage 3
