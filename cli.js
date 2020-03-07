@@ -66,6 +66,9 @@ const builds = {
     sourcemap: options.sourceMap,
   },
 }
+if (options.handleBuilds) {
+  options.handleBuilds(builds)
+}
 function genConfig (name) {
   const opts = builds[name]
   const config = {
