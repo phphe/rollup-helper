@@ -1,4 +1,5 @@
-# rogo
+# rogo 2
+**Document expired. New documentation is being written. 文档过期了, 新文档正在撰写中.**
 本库旨在零配置快速打包js库. 如果你想更多功能, 请参考源码`index.js`, `cli.js`, 不多.
 This library aims to quickly package js libraries with zero configuration. If you want more features, please refer to the source code `index.js`,` cli.js`.
 
