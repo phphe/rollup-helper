@@ -29,8 +29,15 @@ export function belongsTo(source:string, dependencePatterns:(RegExp|string)[]) {
       if (pattern.test(source)) {
         return true
       }
-    } else if (source.startsWith(pattern)) {
-      return true
+    } else {
+      if (pattern === source) {
+        return true
+      }
+      let t = pattern.replace(/^(\/|\\)/, '').replace(/(\/|\\)$/, '')
+      let reg = new RegExp(`^(.*?[/\\\\])?${t}([/\\\\].*?)?$`)
+      if (reg.test(source)) {
+        return true
+      }
     }
   }
 }
