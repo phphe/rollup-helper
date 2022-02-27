@@ -27,5 +27,8 @@
     "rollup-plugin-vue": "^6.0.0",
     "@vue/cli-plugin-babel": "^5.0.1",
     "vue-tsc": "^0.29.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.25"
   }
 }
