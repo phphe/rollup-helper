@@ -1,0 +1,38 @@
+{
+  "name": "rogo",
+  "version": "3.0.0",
+  "description": "",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "build": "tsc --target ES6 --module CommonJS --declaration --moduleResolution node --outDir dist/cjs src/index.ts && tsc --target ES6 --module ES6 --declaration --moduleResolution node --outDir dist/esm src/index.ts"
+  },
+  "bin": "./cli.js",
+  "author": "phphe <phphe@outlook.com> (https://github.com/phphe)",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/plugin-transform-runtime": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@rollup/plugin-alias": "^3.1.5",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^21.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@rollup/plugin-replace": "^4.0.0",
+    "commander": "^9",
+    "rollup": "^2.56.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "ts-node": "^10.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phphe/rogo.git"
+  },
+  "devDependencies": {
+    "@types/node": "^16.4.13",
+    "typescript": "^4"
+  }
+}
