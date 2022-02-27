@@ -9,6 +9,9 @@ import postcss from "rollup-plugin-postcss";
 import vue from "rollup-plugin-vue";
 
 const options: Partial<GetConfigOptions> = {
+  globals: {
+    vue: "Vue",
+  },
   handleBabelConfig(config) {
     config.presets = [
       [
