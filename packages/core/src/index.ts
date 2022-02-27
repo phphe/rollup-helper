@@ -110,6 +110,7 @@ const declarationConfigured: { [input: string]: boolean } = {};
 export type DefaultConfig = ReturnType<typeof getConfig>;
 export type GetConfigOptions = Parameters<typeof getConfig>[0];
 export type BabelOptions = Parameters<typeof babel>[0];
+export type Typescript2Options = Parameters<typeof typescript2>[0];
 export function getConfig(opt: {
   format: "esm" | "cjs" | "umd";
   input?: rollup.RollupOptions["input"];
@@ -122,6 +123,7 @@ export function getConfig(opt: {
   banner?: rollup.OutputOptions["banner"] | boolean;
   typescript?: boolean;
   handleBabelConfig?: (config: BabelOptions) => BabelOptions;
+  handleTypescript2Config?: (config: Typescript2Options) => Typescript2Options;
   afterCreated?: (
     config: DefaultConfig
   ) => DefaultConfig | rollup.RollupOptions;
@@ -133,12 +135,12 @@ export function getConfig(opt: {
       input = "src/index.js";
     }
   }
-  let isTS: boolean
+  let isTS: boolean;
   if (opt.typescript != null) {
-    isTS = opt.typescript
+    isTS = opt.typescript;
   } else {
     // @ts-ignore
-    isTS = !input.endsWith(".js")
+    isTS = !input.endsWith(".js");
   }
   if (!outputFile) {
     if (format === "umd") {
@@ -166,7 +168,7 @@ export function getConfig(opt: {
     );
   }
 
-  const typescriptConfig = {
+  let typescriptConfig: Typescript2Options = {
     tsconfigOverride: {
       compilerOptions: {
         declaration: false,
@@ -180,6 +182,9 @@ export function getConfig(opt: {
       typescriptConfig.tsconfigOverride.compilerOptions.declaration = true;
       declarationConfigured[input.toString()] = true;
     }
+  }
+  if (opt.handleTypescript2Config) {
+    typescriptConfig = opt.handleTypescript2Config(typescriptConfig);
   }
   let babelConfig = getBabelConfig(
     opt.targets
