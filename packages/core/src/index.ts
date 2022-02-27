@@ -1,5 +1,6 @@
 import * as rollup from "rollup";
 import * as fs from "fs";
+import * as hp from "helper-js";
 import babel, * as babelExports from "@rollup/plugin-babel";
 import node from "@rollup/plugin-node-resolve";
 import { terser, Options as TerserOptions } from "rollup-plugin-terser"; // to minify bundle
@@ -116,10 +117,10 @@ export function getConfig(opt: {
   targets?: string;
   minify?: boolean; // for umd
   sourcemap?: rollup.OutputOptions["sourcemap"];
-  umdName?: rollup.OutputOptions["name"];
+  name?: rollup.OutputOptions["name"]; // for umd
   globals?: rollup.OutputOptions["globals"];
   banner?: rollup.OutputOptions["banner"] | boolean;
-  disableTypescript?: boolean;
+  typescript?: boolean;
   handleBabelConfig?: (config: BabelOptions) => BabelOptions;
   afterCreated?: (
     config: DefaultConfig
@@ -128,9 +129,16 @@ export function getConfig(opt: {
   let { input, format, outputFile } = opt;
   if (input == null) {
     input = "src/index.ts";
+    if (!fs.existsSync(input)) {
+      input = "src/index.js";
+    }
   }
-  if (format === "umd" && !opt.umdName) {
-    throw "umdName is required when output umd format";
+  let isTS: boolean
+  if (opt.typescript != null) {
+    isTS = opt.typescript
+  } else {
+    // @ts-ignore
+    isTS = !input.endsWith(".js")
   }
   if (!outputFile) {
     if (format === "umd") {
@@ -147,23 +155,31 @@ export function getConfig(opt: {
   const allExternals = [...resolveAllDependencies(pkg), ...helperExternals];
   const umdExternals = [...resolveUMDDependencies(pkg)]; // umd should bundle dependencies
 
-  let typescriptConfig;
+  if (!opt.name) {
+    const pkgName = pkg.name as string;
+    opt.name = hp.camelCase(
+      pkgName
+        .replace(/[^\w]/g, "_")
+        .replace(/__/g, "_")
+        .replace(/^_/, "")
+        .replace(/_$/, "")
+    );
+  }
+
+  const typescriptConfig = {
+    tsconfigOverride: {
+      compilerOptions: {
+        declaration: false,
+        module: "ESNext",
+        target: "ESNext",
+      },
+    },
+  };
   if (format === "esm" || format === "cjs") {
     if (!declarationConfigured[input.toString()]) {
-      typescriptConfig = {
-        tsconfigOverride: {
-          compilerOptions: {
-            declaration: true,
-          },
-        },
-      };
+      typescriptConfig.tsconfigOverride.compilerOptions.declaration = true;
       declarationConfigured[input.toString()] = true;
     }
-  }
-  if (!typescriptConfig) {
-    typescriptConfig = {
-      tsconfigOverride: { compilerOptions: { declaration: false } },
-    };
   }
   let babelConfig = getBabelConfig(
     opt.targets
@@ -173,13 +189,11 @@ export function getConfig(opt: {
     babelConfig = opt.handleBabelConfig(babelConfig);
   }
   const plugins = [node(), babel(babelConfig), json(), cjs()];
-  if (!opt.disableTypescript) {
+  if (isTS) {
     plugins.splice(1, 0, typescript2(typescriptConfig));
   }
-  if (format === "umd") {
-    if (opt.minify) {
-      plugins.push(terser());
-    }
+  if (opt.minify) {
+    plugins.push(terser());
   }
   let config = {
     input,
@@ -191,6 +205,7 @@ export function getConfig(opt: {
       format: format,
       sourcemap: opt.sourcemap,
       exports: "auto",
+      name: opt.name,
     },
   };
   if (opt.banner === true) {
@@ -199,7 +214,6 @@ export function getConfig(opt: {
     config.output["banner"] = opt.banner;
   }
   if (format === "umd") {
-    config.output["name"] = opt.umdName;
     if (opt.globals) {
       config.output["globals"] = opt.globals;
     }
@@ -237,6 +251,27 @@ export function rollupPluginPostcssFix() {
             /'.*?node_modules\/style\-inject\/dist\/style\-inject\.es\.js'/,
             "'style-inject'"
           );
+        }
+      });
+    },
+  };
+}
+export function rollupPluginVue5Fix() {
+  // for vue2
+  return {
+    name: "rollup-plugin-vue5-fix",
+    generateBundle: (options, bundle) => {
+      Object.entries(bundle).forEach((entry) => {
+        const replaces = {
+          "/dist/normalize-component.mjs": "/dist/normalize-component.js",
+          "/dist/inject-style/browser.mjs": "/dist/inject-style/browser.js",
+        };
+        for (const key of Object.keys(replaces)) {
+          // @ts-ignore
+          if (entry?.[1]?.code?.includes(key)) {
+            // @ts-ignore
+            bundle[entry[0]].code = entry[1].code.replace(key, replaces[key]);
+          }
         }
       });
     },

@@ -37,7 +37,6 @@ if (isTS) {
   realConfigFile = configFile;
   configFile = path.join(__dirname, "ts-config-wrapper.js");
 }
-
 const spawn = require("child_process").spawn;
 const rollupBin =
   path.join(__dirname, "node_modules/.bin/rollup") +
