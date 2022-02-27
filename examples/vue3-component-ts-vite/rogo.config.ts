@@ -23,6 +23,10 @@ const options: Partial<GetConfigOptions> = {
     ];
     return config;
   },
+  handleTypescript2Config(config) {
+    config.tsconfigOverride.compilerOptions.noImplicitAny = false;
+    return config;
+  },
   afterCreated(config) {
     config.plugins.unshift(
       vue(),
