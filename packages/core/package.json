@@ -1,7 +1,14 @@
 {
   "name": "rogo",
   "version": "3.0.0",
-  "description": "",
+  "description": "To help build js/ts/vue library with rollup.",
+  "keywords": [
+    "rollup",
+    "bundle",
+    "build javascript",
+    "build typescript",
+    "build libraray"
+  ],
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
