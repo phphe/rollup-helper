@@ -112,13 +112,13 @@ export type GetConfigOptions = Parameters<typeof getConfig>[0];
 export type BabelOptions = Parameters<typeof babel>[0];
 export type Typescript2Options = Parameters<typeof typescript2>[0];
 export function getConfig(opt: {
-  format: "esm" | "cjs" | "umd";
+  format: "esm" | "cjs" | "umd" | "iife";
   input?: rollup.RollupOptions["input"];
   outputFile?: string;
   targets?: string;
   minify?: boolean; // for umd
   sourcemap?: rollup.OutputOptions["sourcemap"];
-  name?: rollup.OutputOptions["name"]; // for umd
+  name?: rollup.OutputOptions["name"]; // for umd, iife
   globals?: rollup.OutputOptions["globals"];
   banner?: rollup.OutputOptions["banner"] | boolean;
   typescript?: boolean;
@@ -129,6 +129,7 @@ export function getConfig(opt: {
   ) => DefaultConfig | rollup.RollupOptions;
 }) {
   let { input, format, outputFile } = opt;
+  const isUMDOrIife = format === "umd" || format === "iife";
   if (input == null) {
     input = "src/index.ts";
     if (!fs.existsSync(input)) {
@@ -155,7 +156,7 @@ export function getConfig(opt: {
   const pkg = JSON.parse(fs.readFileSync("./package.json").toString());
   const helperExternals = ["@babel/runtime", "tslib"];
   const allExternals = [...resolveAllDependencies(pkg), ...helperExternals];
-  const umdExternals = [...resolveUMDDependencies(pkg)]; // umd should bundle dependencies
+  const umdExternals = [...resolveUMDDependencies(pkg)]; // umd, iife should bundle dependencies
 
   if (!opt.name) {
     const pkgName = pkg.name as string;
@@ -174,6 +175,7 @@ export function getConfig(opt: {
         declaration: false,
         module: "ESNext",
         target: "ESNext",
+        sourceMap: Boolean(opt.sourcemap),
       },
     },
   };
@@ -203,7 +205,7 @@ export function getConfig(opt: {
   let config = {
     input,
     external: (source: string) =>
-      belongsTo(source, format === "umd" ? umdExternals : allExternals),
+      belongsTo(source, isUMDOrIife ? umdExternals : allExternals),
     plugins,
     output: {
       file: outputFile,
@@ -218,7 +220,7 @@ export function getConfig(opt: {
   } else if (opt.banner != null && opt.banner !== false) {
     config.output["banner"] = opt.banner;
   }
-  if (format === "umd") {
+  if (isUMDOrIife) {
     if (opt.globals) {
       config.output["globals"] = opt.globals;
     }
