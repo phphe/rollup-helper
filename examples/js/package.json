@@ -1,6 +1,6 @@
 {
   "name": "rogo-example-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "",
   "main": "dist/index.cjs.js",
@@ -14,7 +14,7 @@
     "@babel/runtime": "^7.7.7"
   },
   "devDependencies": {
-    "rogo": "^3.0.1"
+    "rogo": "^3.1.0"
   },
   "author": ""
 }
