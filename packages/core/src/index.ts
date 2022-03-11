@@ -58,8 +58,6 @@ export function belongsTo(
   for (const pattern of dependencePatterns) {
     if (pattern instanceof RegExp) {
       if (pattern.test(source)) {
-        console.log(source, pattern);
-
         return true;
       }
     } else {
@@ -209,7 +207,6 @@ export function getConfig(opt: {
   if (opt.minify) {
     plugins.push(terser());
   }
-  console.log(isUMDOrIife ? umdExternals : allExternals);
   let config = {
     input,
     external: (source: string) =>
