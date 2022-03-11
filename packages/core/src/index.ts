@@ -70,6 +70,13 @@ export function belongsTo(
       if (source.endsWith(full) || source.includes(full + "/")) {
         return true;
       }
+      // for path import
+      if (source.endsWith("/" + pattern)) {
+        return true;
+      }
+      if (source.includes("/" + pattern + "/")) {
+        return true;
+      }
     }
   }
 }
@@ -202,6 +209,7 @@ export function getConfig(opt: {
   if (opt.minify) {
     plugins.push(terser());
   }
+  console.log(isUMDOrIife ? umdExternals : allExternals);
   let config = {
     input,
     external: (source: string) =>
