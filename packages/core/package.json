@@ -28,13 +28,13 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "^4.0.0",
+    "@types/node": "^16.4.13",
     "commander": "^9",
     "helper-js": "^3.0.0",
     "rollup": "^2.56.1",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
-    "ts-node": "^10.2.0",
-    "@types/node": "^16.4.13"
+    "ts-node": "^10.2.0"
   },
   "repository": {
     "type": "git",
